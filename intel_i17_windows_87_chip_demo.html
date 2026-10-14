@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Intel i17 + Windows 87 Digital Chip Demo</title>
+<style>
+  :root { color-scheme: dark; --cyan:#53e7ff; --blue:#2677ff; --violet:#a46bff; --green:#7dffb2; }
+  * { box-sizing: border-box; }
+  body {
+    margin:0; min-height:100vh; font-family:Consolas, "Courier New", monospace; color:#eaf6ff;
+    background: radial-gradient(ellipse at top, #10284d 0%, #070d1b 55%, #03050b 100%);
+  }
+  header { padding:28px 18px 12px; text-align:center; }
+  h1 { margin:0; font-size:clamp(1.4rem,4vw,2.6rem); letter-spacing:.04em; }
+  header p { color:#a8bfd8; margin:.7rem auto 0; max-width:760px; line-height:1.5; }
+  main { width:min(1100px,94vw); margin:18px auto 44px; display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr)); gap:22px; }
+  .panel { border:1px solid #23456b; border-radius:18px; padding:20px; background:linear-gradient(145deg,rgba(16,35,62,.94),rgba(5,11,23,.96)); box-shadow:0 14px 40px #0008; }
+  .panel h2 { margin:0 0 14px; font-size:1.15rem; }
+  .chip-wrap { min-height:280px; display:grid; place-items:center; overflow:hidden; border-radius:12px; background:radial-gradient(circle,#123456 0%,#07111f 60%,#050a12 100%); }
+  .chip { position:relative; width:min(250px,68vw); aspect-ratio:1; display:grid; place-items:center; border-radius:18px; background:linear-gradient(135deg,#2a3b52,#070d17 55%,#172d46); border:3px solid var(--cyan); box-shadow:0 0 12px #53e7ff99, inset 0 0 28px #53e7ff33; }
+  .chip::before { content:""; position:absolute; inset:12px; border:1px solid #5cecff99; border-radius:10px; }
+  .chip::after { content:""; position:absolute; inset:-15px; border:1px dashed #53e7ff88; border-radius:24px; animation:spin 18s linear infinite; }
+  .pins { position:absolute; inset:-10px; pointer-events:none; background:repeating-linear-gradient(90deg,transparent 0 16px,#72dfff 16px 20px,transparent 20px 27px) top/100% 8px no-repeat,repeating-linear-gradient(90deg,transparent 0 16px,#72dfff 16px 20px,transparent 20px 27px) bottom/100% 8px no-repeat,repeating-linear-gradient(0deg,transparent 0 16px,#72dfff 16px 20px,transparent 20px 27px) left/8px 100% no-repeat,repeating-linear-gradient(0deg,transparent 0 16px,#72dfff 16px 20px,transparent 20px 27px) right/8px 100% no-repeat; }
+  .chip-label { text-align:center; z-index:1; padding:10px; }
+  .chip-label .brand { font-size:1.2rem; font-weight:bold; color:var(--cyan); }
+  .chip-label .model { font-size:2rem; font-weight:bold; margin:8px 0; text-shadow:0 0 12px currentColor; }
+  .chip-label small { color:#b4c9df; display:block; line-height:1.5; }
+  .windows .chip { border-color:var(--violet); box-shadow:0 0 12px #a46bff99,inset 0 0 28px #a46bff33; }
+  .windows .chip::before { border-color:#b58cff99; }
+  .windows .chip::after { border-color:#b58cff88; }
+  .windows .pins { background:repeating-linear-gradient(90deg,transparent 0 16px,#c3a5ff 16px 20px,transparent 20px 27px) top/100% 8px no-repeat,repeating-linear-gradient(90deg,transparent 0 16px,#c3a5ff 16px 20px,transparent 20px 27px) bottom/100% 8px no-repeat,repeating-linear-gradient(0deg,transparent 0 16px,#c3a5ff 16px 20px,transparent 20px 27px) left/8px 100% no-repeat,repeating-linear-gradient(0deg,transparent 0 16px,#c3a5ff 16px 20px,transparent 20px 27px) right/8px 100% no-repeat; }
+  .windows .chip-label .brand { color:#c3a5ff; }
+  .windows .chip-label .model { color:#d2bfff; }
+  .win-logo { display:grid; grid-template-columns:1fr 1fr; gap:4px; width:46px; margin:0 auto 10px; transform:skewY(-7deg); }
+  .win-logo i { display:block; height:19px; background:#ff8a56; box-shadow:0 0 8px #ff8a5688; }
+  .win-logo i:nth-child(2) { background:#ffe36e; }
+  .win-logo i:nth-child(3) { background:#65e7ff; }
+  .win-logo i:nth-child(4) { background:#8cff9a; }
+  .status { display:flex; gap:8px; flex-wrap:wrap; margin:15px 0; }
+  .pill { border:1px solid #31506f; color:#b8d4ef; border-radius:999px; padding:6px 10px; font-size:.78rem; }
+  .readout { min-height:72px; padding:12px; background:#030914; border:1px solid #203b58; border-radius:9px; color:var(--green); line-height:1.5; white-space:pre-wrap; overflow-wrap:anywhere; }
+  .controls { display:flex; gap:10px; flex-wrap:wrap; margin-top:12px; }
+  button { border:1px solid #4c8bb8; background:#102b47; color:#eefaff; padding:10px 14px; border-radius:8px; cursor:pointer; font:inherit; }
+  button:hover { background:#17446b; }
+  button:focus-visible { outline:2px solid white; outline-offset:3px; }
+  .windows button { border-color:#8061bc; }
+  .foot { grid-column:1/-1; color:#93aac3; text-align:center; font-size:.82rem; line-height:1.6; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { *,*::before,*::after { animation:none!important; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>⚡ DIGITAL CHIP LAB</h1>
+  <p>A small, fictional concept demo for a GitHub project: an “Intel i17” processor concept and a “Windows 87” retro-future operating-system concept. These are fan-made mockups, not real Intel or Microsoft products.</p>
+</header>
+<main>
+  <section class="panel">
+    <h2>01 / PROCESSOR CONCEPT</h2>
+    <div class="chip-wrap">
+      <div class="chip" aria-label="Animated fictional Intel i17 chip">
+        <div class="pins"></div>
+        <div class="chip-label">
+          <div class="brand">intel-style</div>
+          <div class="model">i17</div>
+          <small>HYPER DIGITAL<br>CONCEPT CPU</small>
+        </div>
+      </div>
+    </div>
+    <div class="status"><span class="pill">8 CORE CONCEPT</span><span class="pill">QUANTUM-LOOK UI</span><span class="pill">DEMO ONLY</span></div>
+    <div class="readout" id="cpu-readout" aria-live="polite">CPU STATUS: STANDBY
+CORE SYSTEM: READY
+DEMO CLOCK: -- GHz (not real hardware)</div>
+    <div class="controls">
+      <button id="boot-cpu">Boot chip</button>
+      <button id="scan-cpu">Run diagnostics</button>
+    </div>
+  </section>
+  <section class="panel windows">
+    <h2>02 / OPERATING SYSTEM CONCEPT</h2>
+    <div class="chip-wrap">
+      <div class="chip" aria-label="Animated fictional Windows 87 digital chip">
+        <div class="pins"></div>
+        <div class="chip-label">
+          <div class="win-logo" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+          <div class="model">WINDOWS 87</div>
+          <small>RETRO-FUTURE<br>DIGITAL EDITION</small>
+        </div>
+      </div>
+    </div>
+    <div class="status"><span class="pill">RETRO UI</span><span class="pill">VIRTUAL SYSTEM</span><span class="pill">DEMO ONLY</span></div>
+    <div class="readout" id="os-readout" aria-live="polite">SYSTEM STATUS: OFFLINE
+BOOT DEVICE: VIRTUAL CHIP
+READY TO START</div>
+    <div class="controls">
+      <button id="boot-os">Start Windows 87</button>
+      <button id="scan-os">System check</button>
+    </div>
+  </section>
+  <p class="foot">Single-file HTML/CSS/JavaScript demo. No installation, downloads, network access, or real hardware control required. Open this file in a browser, or commit it to a GitHub repository as <code>index.html</code>.</p>
+</main>
+<script>
+const cpuReadout = document.getElementById('cpu-readout');
+const osReadout = document.getElementById('os-readout');
+document.getElementById('boot-cpu').addEventListener('click', () => {
+  cpuReadout.textContent = 'CPU STATUS: BOOTED ✓\\nVIRTUAL CORES: 8 ONLINE\\nMEMORY BUS: SIMULATED\\nNOTE: visual demo only; no real CPU is controlled.';
+});
+document.getElementById('scan-cpu').addEventListener('click', () => {
+  cpuReadout.textContent = 'DIAGNOSTICS COMPLETE ✓\\nCHIP DESIGN: OK\\nANIMATION: OK\\nBUTTON CONTROLS: OK\\nPHYSICAL HARDWARE TEST: NOT PERFORMED';
+});
+document.getElementById('boot-os').addEventListener('click', () => {
+  osReadout.textContent = 'WINDOWS 87 CONCEPT STARTING...\\n[ OK ] VIRTUAL KERNEL\\n[ OK ] PIXEL DESKTOP\\n[ OK ] DIGITAL CHIP LINK\\nWELCOME TO WINDOWS 87 (FAN CONCEPT)';
+});
+document.getElementById('scan-os').addEventListener('click', () => {
+  osReadout.textContent = 'SYSTEM CHECK COMPLETE ✓\\nINTERFACE: ONLINE\\nVIRTUAL CHIP: DETECTED\\nFILES: DEMO ONLY\\nNO REAL OPERATING SYSTEM INSTALLED';
+});
+</script>
+</body>
+</html>
